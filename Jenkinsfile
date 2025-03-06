@@ -19,7 +19,7 @@ pipeline {
                     def dockerRegistry = "https://index.docker.io/v1/"
                     def dockerUsername = "srikantb1"
                     //def dockerPassword = "dckr_pat_FIsZePNH1DzR2lvWQCJmmWzEB3I"
-                    def dockerPassword = ${DOCKER_HUB_CREDENTIALS}
+                    def dockerPassword = '${DOCKER_HUB_CREDENTIALS}'
                     def dockerImageName = "node-js-sample"
                     def dockerImageTag = "1.0"
 
