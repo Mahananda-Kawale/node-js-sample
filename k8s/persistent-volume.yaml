@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -20,3 +21,5 @@ spec:
   resources:
     requests:
       storage: 1Gi
+  volumeName: node-js-pv  # Explicitly bind to this PV
+  storageClassName: ""    # Disable dynamic provisioning
