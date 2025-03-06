@@ -15,11 +15,21 @@ pipeline {
         stage('Build and Push Docker Image') {
             steps {
                 script {
-                    bat 'docker build -t node-js-sample:1.0 .'
-                    echo '${DOCKER_HUB_CREDENTIALS}' | bat 'docker login --username srikantb1 --password-stdin'
-                   
-                    bat 'docker tag node-js-sample:1.0 srikantb1/node-js-sample:1.0'
-                    bat 'docker push srikantb1/node-js-sample:1.0'
+                   // Hardcoded credentials (NOT RECOMMENDED)
+                    def dockerRegistry = "https://index.docker.io/v1/"
+                    def dockerUsername = "srikantb1"
+                    def dockerPassword = "dckr_pat_FIsZePNH1DzR2lvWQCJmmWzEB3I"
+                    def dockerImageName = "node-js-sample"
+                    def dockerImageTag = "1.0"
+
+                    // Log in to Docker registry
+                    sh "echo ${dockerPassword} | docker login -u ${dockerUsername} --password-stdin ${dockerRegistry}"
+
+                    // Build Docker image
+                    sh "docker build -t ${dockerUsername}/${dockerImageName}:${dockerImageTag} ."
+
+                    // // Push Docker image to the registry
+                    sh "docker push ${dockerUsername}/${dockerImageName}:${dockerImageTag}"
                     
                     }
                 }
