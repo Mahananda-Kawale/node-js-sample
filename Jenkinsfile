@@ -44,10 +44,21 @@ pipeline {
             }
         }
 
+         // Stage 4: Clean Workspace
         stage('Clean Workspace') {
             steps {
-                bat 'rm -rf *' // Clean the workspace
+                cleanWs()  // Safely clean the workspace
             }
+        }
+    }
+
+    // Post-build actions
+    post {
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
         }
     }
 }
