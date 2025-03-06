@@ -1,0 +1,262 @@
+Step-by-Step Guide
+Step 1: Set Up the Environment
+1.	Verify Tools:
+o	Ensure Git, Docker, Minikube, and Jenkins are installed.
+o	Start Minikube:
+bash
+Copy
+minikube start
+o	Verify kubectl is pointing to Minikube:
+bash
+Copy
+kubectl config use-context minikube
+2.	Test Cases:
+o	Check the command to verify the status of Minikube:
+bash
+Copy
+minikube status
+o	Check the command to verify the Jenkins service status:
+bash
+Copy
+sudo systemctl status jenkins
+________________________________________
+Step 2: Navigate the Node.js Application Repository
+1.	Navigate to the Project Directory:
+bash
+Copy
+cd ~/Desktop/Project/node-js-sample
+________________________________________
+Step 3: Create and Configure a Dockerfile
+1.	Create a Dockerfile:
+dockerfile
+Copy
+FROM node:14
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 5000
+CMD ["node", "app.js"]
+2.	Test Cases:
+o	Check if the Dockerfile exists and is correctly configured:
+bash
+Copy
+cat Dockerfile
+________________________________________
+Step 4: Build and Tag the Docker Image
+1.	Build the Docker Image:
+bash
+Copy
+docker build -t node-js-sample:1.0 .
+2.	Test Cases:
+o	Check if the Docker image is built successfully:
+bash
+Copy
+docker images
+o	Check if the Docker image is tagged correctly:
+bash
+Copy
+docker images | grep node-js-sample
+________________________________________
+Step 5: Push the Docker Image to Docker Hub
+1.	Log in to Docker Hub:
+bash
+Copy
+docker login
+2.	Tag the Image:
+bash
+Copy
+docker tag node-js-sample:1.0 <your-dockerhub-username>/node-js-sample:1.0
+3.	Push the Image:
+bash
+Copy
+docker push <your-dockerhub-username>/node-js-sample:1.0
+4.	Test Cases:
+o	Check the command to push the Docker image to a repository:
+bash
+Copy
+docker push <your-dockerhub-username>/node-js-sample:1.0
+________________________________________
+Step 6: Set Up Jenkins for CI/CD
+1.	Create a Jenkins Pipeline Job:
+o	Name: Node.js-Deployment
+o	Pipeline Script:
+groovy
+Copy
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/your-repo/node-js-sample.git'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t node-js-sample:1.0 .'
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                sh 'docker tag node-js-sample:1.0 <your-dockerhub-username>/node-js-sample:1.0'
+                sh 'docker push <your-dockerhub-username>/node-js-sample:1.0'
+            }
+        }
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl apply -f k8s/deployment.yaml'
+            }
+        }
+    }
+}
+2.	Test Cases:
+o	Check if the Jenkins pipeline project is created successfully:
+	Verify in the Jenkins UI.
+________________________________________
+Step 7: Deploy the Application on Kubernetes
+1.	Create a k8s Directory:
+bash
+Copy
+mkdir k8s
+2.	Create deployment.yaml:
+yaml
+Copy
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: node-js-sample
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: node-js
+  template:
+    metadata:
+      labels:
+        app: node-js
+    spec:
+      containers:
+      - name: node-js-sample
+        image: <your-dockerhub-username>/node-js-sample:1.0
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: node-js-service
+spec:
+  type: NodePort
+  ports:
+  - port: 5000
+    targetPort: 5000
+    nodePort: 30007
+  selector:
+    app: node-js
+3.	Apply the Deployment:
+bash
+Copy
+kubectl apply -f k8s/deployment.yaml
+4.	Test Cases:
+o	Check if the Kubernetes deployment file is present and correctly configured:
+bash
+Copy
+cat k8s/deployment.yaml
+o	Check if the deployed pods are running successfully:
+bash
+Copy
+kubectl get pods
+o	Check the command to verify the status of Kubernetes services:
+bash
+Copy
+kubectl get svc
+o	Check if the application is accessible through the configured service:
+bash
+Copy
+minikube ip
+Access http://<minikube-ip>:30007 in your browser.
+________________________________________
+Step 8: Add a Persistent Volume and Persistent Volume Claim
+1.	Create persistent-volume.yaml:
+yaml
+Copy
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: node-js-pv
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /data/node-js
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: node-js-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+2.	Apply the PV and PVC:
+bash
+Copy
+kubectl apply -f k8s/persistent-volume.yaml
+3.	Modify deployment.yaml:
+Add the following to the container spec:
+yaml
+Copy
+volumeMounts:
+- mountPath: /usr/src/app/data
+  name: node-js-storage
+volumes:
+- name: node-js-storage
+  persistentVolumeClaim:
+    claimName: node-js-pvc
+4.	Test Cases:
+o	Check the presence and correctness of the Persistent Volume (PV) configuration file:
+bash
+Copy
+cat k8s/persistent-volume.yaml
+o	Check if the Persistent Volume Claim (PVC) is bound to the Persistent Volume (PV):
+bash
+Copy
+kubectl get pvc
+________________________________________
+Step 9: Create a Network Policy
+1.	Create network-policy.yaml:
+yaml
+Copy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: node-js-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app: node-js
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          access: allowed
+2.	Apply the Network Policy:
+bash
+Copy
+kubectl apply -f k8s/network-policy.yaml
+3.	Test Cases:
+o	Check if the Kubernetes network policy is created successfully:
+bash
+Copy
+kubectl get networkpolicies
+o	Check if at least one pod is labeled correctly as per the configuration:
+bash
+Copy
+kubectl label pod <pod-name> access=allowed
+________________________________________
