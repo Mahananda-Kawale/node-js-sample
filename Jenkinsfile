@@ -8,7 +8,7 @@ pipeline {
             steps {
                 git(
                     url: 'https://github.com/Mahananda-Kawale/node-js-sample.git',
-                    branch: 'test'
+                    branch: 'Mahananda-Kawale-patch-1'
                 )
             }
         }
