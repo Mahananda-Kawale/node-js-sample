@@ -2,6 +2,7 @@ pipeline {
     agent any
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-token')  // Reference the credential ID
+        KUBECONFIG = credentials('kubeconfig') 
     }
     stages {
         stage('Checkout') {
