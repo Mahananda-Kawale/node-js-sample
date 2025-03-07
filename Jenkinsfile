@@ -40,7 +40,7 @@ pipeline {
             steps {
                 sh 'kubectl apply -f k8s/deployment.yaml'
                 sh 'kubectl apply -f k8s/network-policy.yaml'
-                sh 'kubectl apply -f k8s/peristent-volume.yaml'
+                sh 'kubectl apply -f k8s/persistent-volume.yaml'
             }
         }
 
