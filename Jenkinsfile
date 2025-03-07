@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-token')  // Reference the credential ID
+        // DOCKER_HUB_CREDENTIALS = credentials('docker-hub-token')  // Reference the credential ID
         KUBECONFIG = credentials('kubeconfig') 
     }
     stages {
@@ -9,7 +9,7 @@ pipeline {
             steps {
                 git(
                     url: 'https://github.com/Mahananda-Kawale/node-js-sample.git',
-                    branch: 'Mahananda-Kawale-patch-1'
+                    branch: 'main'
                 )
             }
         }
