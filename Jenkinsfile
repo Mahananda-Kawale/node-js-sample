@@ -25,31 +25,31 @@ pipeline {
                     def dockerImageTag = "1.0"
 
                     // Log in to Docker registry
-                    bat "echo ${dockerPassword} | docker login -u ${dockerUsername} --password-stdin ${dockerRegistry}"
+                    sh "echo ${dockerPassword} | docker login -u ${dockerUsername} --password-stdin ${dockerRegistry}"
 
                     // Build Docker image
-                    bat "docker build -t ${dockerUsername}/${dockerImageName}:${dockerImageTag} ."
+                    sh "docker build -t ${dockerUsername}/${dockerImageName}:${dockerImageTag} ."
 
                     // // Push Docker image to the registry
-                    bat "docker push ${dockerUsername}/${dockerImageName}:${dockerImageTag}"
+                    sh "docker push ${dockerUsername}/${dockerImageName}:${dockerImageTag}"
                     
                     }
                 }
             }
         stage('Deploy to Kubernetes') {
             steps {
-                bat 'kubectl apply -f k8s/deployment.yaml'
-                // bat 'kubectl apply -f k8s/network-policy.yaml'
-                // bat 'kubectl apply -f k8s/peristent-volume.yaml'
+                sh 'kubectl apply -f k8s/deployment.yaml'
+                sh 'kubectl apply -f k8s/network-policy.yaml'
+                sh 'kubectl apply -f k8s/peristent-volume.yaml'
             }
         }
 
          // Stage 4: Clean Workspace
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()  // Safely clean the workspace
-            }
-        }
+        // stage('Clean Workspace') {
+        //     steps {
+        //         cleanWs()  // Safely clean the workspace
+        //     }
+        // }
     }
 
     // Post-build actions
